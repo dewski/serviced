@@ -4,8 +4,8 @@ require 'serviced/version'
 Gem::Specification.new do |s|
   s.name = 'serviced'
   s.version = Serviced::VERSION
-  s.summary = ''
-  s.description = ''
+  s.summary = 'An interface to dealing with the common pain points while dealing with 3rd parties APIs'
+  s.description = 'An interface to dealing with the common pain points while dealing with 3rd parties APIs'
   s.authors     = ['Garrett Bjerkhoel']
   s.email       = ['me@garrettbjerkhoel.com']
   s.platform    = Gem::Platform::RUBY
