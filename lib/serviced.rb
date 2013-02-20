@@ -13,6 +13,8 @@ MongoMapper.connect('development')
 require 'serviced/base'
 
 module Serviced
+  class MissingServiceError < StandardError; end
+
   # Direct mapping of service names to their service object.
   mattr_accessor :services
   @@services = {}
