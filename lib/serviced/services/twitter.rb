@@ -3,8 +3,6 @@ require 'serviced/services/model'
 module Serviced
   module Services
     class Twitter < Model
-      include TwitterClient
-
       key :username
       key :profile_url
       key :avatar_url
@@ -86,7 +84,7 @@ module Serviced
       end
 
       def account
-        @account ||= twitter_client.user username
+        @account ||= ::Twitter.user username
       end
 
       def store_account_data
