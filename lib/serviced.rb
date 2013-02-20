@@ -61,6 +61,8 @@ module Serviced
 
   def self.service_exists?(name)
     !!retrieve_service(name)
+  rescue MissingServiceError
+    false
   end
 
   def self.retrieve_service(name)
