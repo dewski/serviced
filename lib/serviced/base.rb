@@ -16,15 +16,13 @@ module Serviced
         self.services.clear
 
         services.each do |name|
-          self.services << name if Serviced.service_exists?(name)
+          self.services += [name] if Serviced.service_exists?(name)
         end
       end
     end
     
     included do
-      class << self
-        attr_accessor :services
-      end
+      class_attribute :services
       self.services = []
 
       validate :validate_services, :if => :serviced_enabled?
