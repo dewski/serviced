@@ -5,5 +5,5 @@ gemspec
 gem 'rake'
 
 group :test do
-  #
+  gem 'activemodel'
 end
