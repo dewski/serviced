@@ -20,7 +20,7 @@ module Serviced
   @@services = {}
 
   # Direct mapping of service names to their service object.
-  mattr_accessor :queued_refreshes
+  mattr_writer :queued_refreshes
   @@queued_refreshes = false
 
   # Direct mapping of service names to their service object.
