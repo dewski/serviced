@@ -1,3 +1,5 @@
+require 'serviced/jobs/create_services'
+
 Dir[File.join(File.dirname(__FILE__), 'services', '*.rb')].each do |service|
   require service
 end
@@ -6,6 +8,8 @@ module Serviced
   module Base
     extend ActiveSupport::Concern
 
+    class MissingServiceError < StandardError; end
+
     module ClassMethods
       # Load all services to the class.
       #
@@ -13,22 +17,24 @@ module Serviced
       #
       # Returns nothing.
       def serviced(*services)
-        self.services.clear
-
         services.each do |name|
-          self.services += [name] if Serviced.service_exists?(name)
+          if Serviced.service_exists?(name)
+            self.services |= [name.to_sym]
+          end
         end
       end
     end
-    
+
     included do
-      class_attribute :services
+      class << self
+        attr_accessor :services
+      end
       self.services = []
 
       validate :validate_services, :if => :serviced_enabled?
-      after_create :enqueue_service_creation, :if => :serviced_enabled?
       after_update :refresh_services, :if => :serviced_enabled?
       before_destroy :destroy_services, :if => :serviced_enabled?
+      after_commit :enqueue_service_creation, :on => :create, :if => :serviced_enabled?
     end
 
     def serviced_enabled?
@@ -37,13 +43,11 @@ module Serviced
 
     def enqueue_service_creation
       pk = send(self.class.primary_key)
-      Serviced.enqueue(Serviced::CreateServices, pk)
+      Serviced.enqueue(Serviced::Jobs::CreateServices, self.class.name, pk)
     end
 
     def create_services
       self.class.services.each do |name|
-        next unless send("#{name}_identifier?")
-
         if service = service(name)
           service.save
         end
@@ -56,8 +60,6 @@ module Serviced
     # Returns nothing.
     def refresh_services
       self.class.services.each do |service|
-        next unless send("#{service}_identifier?")
-
         refresh_service service
       end
     end
@@ -70,10 +72,7 @@ module Serviced
     # if missing.
     def refresh_service(name)
       if service = service(name)
-        class_name = Serviced.service_start_class(name)
-        pk = send(self.class.primary_key)
-
-        Serviced.enqueue(class_name, pk)
+        service.enqueue_refresh
       else
         raise MissingServiceError, "Missing #{name} service."
       end
@@ -86,8 +85,8 @@ module Serviced
     #
     # Returns Service instance if it exists, nil if missing.
     def service(name)
-      if self.class.services.include?(name)
-        Serviced.services[name].for(self)
+      if self.class.services.include?(name.to_sym)
+        Serviced.services[name.to_sym].for(self)
       end
     end
 
@@ -105,8 +104,6 @@ module Serviced
 
     def validate_services
       self.class.services.each do |service|
-        next if !send("#{service}_identifier?")
-
         if service = service(service)
           service.validate(self)
         end
