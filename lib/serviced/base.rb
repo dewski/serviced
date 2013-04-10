@@ -1,9 +1,5 @@
 require 'serviced/jobs/create_services'
 
-Dir[File.join(File.dirname(__FILE__), 'services', '*.rb')].each do |service|
-  require service
-end
-
 module Serviced
   module Base
     extend ActiveSupport::Concern

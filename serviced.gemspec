@@ -15,11 +15,6 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ['lib']
 
-  s.add_dependency 'swish',         '0.8.1'
-  s.add_dependency 'twitter',       '4.1.2'
-  s.add_dependency 'octokit',       '1.8.1'
-  s.add_dependency 'linkedin',      '0.3.7'
-
   s.add_dependency 'rails',         '>= 3.0.0'
   s.add_dependency 'resque'
 

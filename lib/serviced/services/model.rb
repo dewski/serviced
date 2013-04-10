@@ -15,7 +15,6 @@ module Serviced
       validates :identifier, :presence => true
 
       after_create :enqueue_refresh
-      before_save :stats_update_worker_info, :if => :finished_working_at_changed?
 
       class << self
         # The class that is used to interface with the subject. It is expected
