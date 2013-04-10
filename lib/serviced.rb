@@ -10,18 +10,10 @@ MongoMapper.config = {
 }
 MongoMapper.connect('development')
 
-require 'serviced/base'
-
 module Serviced
-  class MissingServiceError < StandardError; end
-
   # Direct mapping of service names to their service object.
   mattr_accessor :services
   @@services = {}
-
-  # Direct mapping of service names to their service object.
-  mattr_writer :queued_refreshes
-  @@queued_refreshes = false
 
   # Direct mapping of service names to their service object.
   mattr_accessor :queue_class
@@ -32,10 +24,6 @@ module Serviced
     :github   => :git_hub,
     :linkedin => :linked_in
   }
-
-  def self.queued_refreshes?
-    !!@@queued_refreshes
-  end
 
   def self.setup
     yield self
@@ -52,17 +40,8 @@ module Serviced
     raise MissingServiceError, "Missing service class for #{name.inspect} (#{class_name})."
   end
 
-  def self.service_start_class(name)
-    class_name = "Serviced::#{aliases.fetch(name.to_sym, name).to_s.classify}::Start"
-    class_name.constantize
-  rescue NameError
-    raise "Missing service start class for #{name.inspect} (#{class_name})."
-  end
-
   def self.service_exists?(name)
     !!retrieve_service(name)
-  rescue MissingServiceError
-    false
   end
 
   def self.retrieve_service(name)
@@ -75,3 +54,5 @@ module Serviced
     end
   end
 end
+
+require 'serviced/base'
