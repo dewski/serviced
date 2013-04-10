@@ -22,10 +22,7 @@ module Serviced
   @@queue_class = Resque
 
   mattr_accessor :aliases
-  @@aliases = {
-    :github   => :git_hub,
-    :linkedin => :linked_in
-  }
+  @@aliases = {}
 
   def self.setup
     yield self
