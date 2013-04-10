@@ -1,7 +1,5 @@
 require 'rubygems'
-require 'bundler'
-Bundler.setup(:default, :test)
-Bundler.require(:default, :test)
+require 'bundler/setup'
 
 $:.unshift File.dirname(File.expand_path('../lib', __FILE__))
 require 'minitest/autorun'
