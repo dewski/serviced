@@ -4,8 +4,6 @@ module Serviced
   module Base
     extend ActiveSupport::Concern
 
-    class MissingServiceError < StandardError; end
-
     module ClassMethods
       # Load all services to the class.
       #

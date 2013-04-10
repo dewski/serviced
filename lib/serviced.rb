@@ -11,6 +11,8 @@ MongoMapper.config = {
 MongoMapper.connect('development')
 
 module Serviced
+  class MissingServiceError < StandardError; end
+
   # Direct mapping of service names to their service object.
   mattr_accessor :services
   @@services = {}
@@ -42,6 +44,8 @@ module Serviced
 
   def self.service_exists?(name)
     !!retrieve_service(name)
+  rescue MissingServiceError
+    false
   end
 
   def self.retrieve_service(name)
@@ -56,3 +60,4 @@ module Serviced
 end
 
 require 'serviced/base'
+require 'serviced/services/model'
