@@ -1,3 +1,10 @@
+module Serviced
+  module Services
+    class Twitter < Model
+    end
+  end
+end
+
 class TestModel
   include ActiveModel::Validations
   extend ActiveModel::Callbacks
