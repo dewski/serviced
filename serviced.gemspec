@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'octokit',       '1.8.1'
   s.add_dependency 'linkedin',      '0.3.7'
 
+  s.add_dependency 'rails',         '>= 3.0.0'
   s.add_dependency 'resque'
 
   s.add_dependency 'mongo_mapper',  '0.11.1'
