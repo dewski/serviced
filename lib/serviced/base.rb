@@ -1,3 +1,5 @@
+require 'active_support/core_ext/class/attribute'
+require 'active_support/concern'
 require 'serviced/jobs/create_services'
 
 module Serviced
@@ -7,7 +9,7 @@ module Serviced
     module ClassMethods
       # Load all services to the class.
       #
-      # services - string or symbol arguments of service names.
+      # services - string or symbol of service names.
       #
       # Returns nothing.
       def serviced(*services)
@@ -20,9 +22,7 @@ module Serviced
     end
 
     included do
-      class << self
-        attr_accessor :services
-      end
+      class_attribute :services
       self.services = []
 
       validate :validate_services, :if => :serviced_enabled?
