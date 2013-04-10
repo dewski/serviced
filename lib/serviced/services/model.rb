@@ -3,35 +3,97 @@ module Serviced
     class Model
       include MongoMapper::Document
 
+      key :subject_id, Integer
+      key :identifier
       key :started_working_at, Time, :default => lambda { Time.now.utc }
       key :finished_working_at, Time
-      key :candidate_id, Integer
       key :last_refreshed_at, Time
 
       timestamps!
 
-      class << self
-        attr_accessor :refresh_interval
+      validates :subject_id, :presence => true, :uniqueness => true
+      validates :identifier, :presence => true
 
-        # Sets the service's refresh interval.
+      after_create :enqueue_refresh
+      before_save :stats_update_worker_info, :if => :finished_working_at_changed?
+
+      class << self
+        # The class that is used to interface with the subject. It is expected
+        # to be a +ActiveRecord+ model.
         #
-        # time - Time interval for refresh rate.
+        ## TODO: Not sure if we should _ensure_ it's an ActiveRecord model though.
         #
-        # Returns Fixnum of timestamp if time is nil.
-        def refresh_interval(time=nil)
-          if time.nil?
-            @refresh_interval
+        # Returns subject class.
+        def subject_class(klass = nil)
+          if klass.nil?
+            @subject_class || raise("Missing subject class!")
           else
-            @refresh_interval = time
+            @subject_class = klass
           end
         end
 
-        # The abstract method that handles loading the associated
-        # service document.
+        def subject_class?
+          subject_class.present?
+        end
+
+        # The service name set for the given class, mostly used to know the
+        # identifier column on the subject.
         #
-        # Raises NotImplementedError until implemented in subclass.
-        def for(object)
-          raise NotImplementedError, "#{self.class} has not implemented Class.for(object)"
+        # Returns service name.
+        def service_name(name = nil)
+          if name.nil?
+            @service_name ||= model_name.human.gsub(/\s+/, '').downcase.to_sym
+          else
+            @service_name = name
+          end
+        end
+
+        def service_name?
+          service_name.present?
+        end
+
+        # The column that the subject is expected to return which contains the
+        # unique identifier for the service.
+        #
+        # Returns service identifier column.
+        def identifier_column(column = nil)
+          if column.nil?
+            @identifier_column ||= "#{service_name}_identifier"
+          else
+            @identifier_column = column
+          end
+        end
+
+        def identifier_column?
+          identifier_column.present?
+        end
+
+        # Allows a subclass to set its Serviced job class, if it differs from
+        # the generic one.
+        #
+        # Returns the service class.
+        def service_class(klass = nil)
+          if klass.nil?
+            @service_class ||= Serviced::Jobs::Service
+          else
+            @service_class = klass
+          end
+        end
+
+        def service_class?
+          service_class.present?
+        end
+
+        # The Class.for method handles finding or initializing new Serviced
+        # service documents for the given subject. The service document will
+        # be prefilled with values needed to save the document if one is not
+        # found.
+        #
+        # subject - The subject that the service model is associated to.
+        #
+        # Returns Serviced::Services::Model document.
+        def for(subject)
+          find_or_initialize_by_subject_id_and_identifier(subject.id, subject.send(identifier_column))
         end
 
         # Keep track of how long it takes for jobs to finish.
@@ -58,14 +120,12 @@ module Serviced
         end
       end
 
-      refresh_interval 1.day
-
-      # The abstract method that should prevent a service from triggering if the
-      # condition is not met.
+      # Determines if the service should be interacted with by knowing if it's
+      # active.
       #
-      # Raises NotImplementedError until implemented in subclass.
+      # Returns true if active, false if not.
       def active?
-        raise NotImplementedError, "#{self.class} has not implemented #active?"
+        identifier?
       end
 
       # The abstract method that handles refreshing a service's data.
@@ -83,13 +143,11 @@ module Serviced
       end
 
       def working!
-        self.started_working_at = Time.now.utc
-        save!
+        update_attribute(:started_working_at, Time.now.utc)
       end
 
       def finished!
-        self.finished_working_at = Time.now.utc
-        save!
+        update_attribute(:finished_working_at, Time.now.utc)
       end
 
       # Consider the service to be working if the finished working
@@ -101,19 +159,9 @@ module Serviced
 
         started_working_at > finished_working_at
       end
-      
+
       def finished?
         !working?
-      end
-
-      # Determines if the current service needs to be refreshed by taking the
-      # last_refreshed_at and comparing it to the service's refresh_interval
-      # window.
-      #
-      # Returns true if expired, false if not.
-      def expired?
-        return false if !last_refreshed_at?
-        last_refreshed_at <= (Time.now.utc - self.class.refresh_interval)
       end
 
       def refresh!
@@ -127,27 +175,26 @@ module Serviced
       #
       # Returns current Time.
       def refreshed
-        self.last_refreshed_at = Time.now.utc
-      end
-
-      # Finds the associated Candidate based on the candidate_id.
-      #
-      # Returns Candidate if found.
-      def candidate
-        Candidate.find candidate_id
+        update_attribute(:last_refreshed_at, Time.now.utc)
       end
 
       def forced_refresh?
         !!@forced_refresh
       end
 
-      private
+      # Finds the associated subject based on the subject class and subject_id.
+      #
+      # Returns Subject if found.
+      def subject
+        self.class.subject_class.find(subject_id)
+      end
 
-      def with_expiration
-        return false if !active? || (!expired? && !forced_refresh?)
-        yield
-        refreshed
-        save!
+      def enqueue_refresh
+        Serviced.enqueue \
+          self.class.service_class,
+          self.class.service_name,
+          self.class.subject_class.name,
+          subject_id
       end
     end
   end
