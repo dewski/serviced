@@ -5,7 +5,7 @@ module Serviced
   end
 end
 
-class TestModel
+class Email
   include ActiveModel::Validations
   extend ActiveModel::Callbacks
   define_model_callbacks :create, :update, :destroy, :commit
@@ -13,8 +13,8 @@ class TestModel
   include Serviced::Base
 end
 
-class Gmail < TestModel
+class Gmail < Email
 end
 
-class Hotmail < TestModel
+class Hotmail < Email
 end
