@@ -1,15 +1,6 @@
 require 'resque'
 require 'mongo_mapper'
 
-MongoMapper.config = {
-  'development' => {
-    'host'      => '127.0.0.1',
-    'port'      => ENV['GH_MONGODB_PORT'],
-    'database'  => 'serviced'
-  }
-}
-MongoMapper.connect('development')
-
 module Serviced
   class MissingServiceError < StandardError; end
 
