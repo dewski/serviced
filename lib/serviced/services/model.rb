@@ -1,3 +1,5 @@
+require 'serviced/jobs/service'
+
 module Serviced
   module Services
     class Model
