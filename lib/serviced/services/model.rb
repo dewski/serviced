@@ -187,7 +187,7 @@ module Serviced
       #
       # Returns Subject if found.
       def subject
-        self.class.subject_class.find(subject_id)
+        @subject ||= self.class.subject_class.find(subject_id)
       end
 
       def enqueue_refresh
