@@ -57,9 +57,9 @@ module Serviced
         # Returns service identifier column.
         def identifier_column(column = nil)
           if column.nil?
-            @identifier_column ||= "#{service_name}_identifier"
+            @identifier_column ||= "#{service_name}_identifier".to_sym
           else
-            @identifier_column = column
+            @identifier_column = column.to_sym
           end
         end
 
