@@ -40,12 +40,12 @@ module Serviced
   end
 
   def self.service_exists?(name)
-    !!retrieve_service(name)
+    !!fetch_service(name)
   rescue MissingServiceError
     false
   end
 
-  def self.retrieve_service(name)
+  def self.fetch_service(name)
     if service = @@services[name.to_sym]
       service
     elsif service_class = service_class(name)
