@@ -190,6 +190,10 @@ module Serviced
         @subject ||= self.class.subject_class.find(subject_id)
       end
 
+      def reset_identifier
+        subject.update_column(self.class.identifier_column, nil)
+      end
+
       def enqueue_refresh
         Serviced.enqueue \
           self.class.service_class,
