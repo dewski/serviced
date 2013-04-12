@@ -2,7 +2,7 @@ require 'serviced/jobs/base'
 
 module Serviced
   module Jobs
-    class Service < Base
+    class Refresh < Base
       rescue_from Timeout::Error, Errno::ETIMEDOUT, :with => :requeue
 
       # The default queue that all Serviced jobs will run under.

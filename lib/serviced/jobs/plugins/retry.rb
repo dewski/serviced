@@ -11,7 +11,7 @@ module Serviced
           def requeue
             unless defined?(@args)
               raise RuntimeError, "Attempted to requeue #{self} but there were no args present." \
-                "If you overrided Serviced::Jobs::Service be sure to set @args in #{self}.perform."
+                "If you overrided Serviced::Jobs::Refresh be sure to set @args in #{self}.perform."
             end
 
             Serviced.enqueue(self, *Array(@args))

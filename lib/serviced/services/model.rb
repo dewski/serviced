@@ -1,4 +1,4 @@
-require 'serviced/jobs/service'
+require 'serviced/jobs/refresh'
 
 module Serviced
   module Services
@@ -75,7 +75,7 @@ module Serviced
         # Returns the service class.
         def service_class(klass = nil)
           if klass.nil?
-            @service_class ||= Serviced::Jobs::Service
+            @service_class ||= Serviced::Jobs::Refresh
           else
             @service_class = klass
           end
