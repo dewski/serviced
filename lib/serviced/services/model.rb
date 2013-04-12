@@ -13,7 +13,7 @@ module Serviced
 
       timestamps!
 
-      validates :subject_id, :presence => true, :uniqueness => true
+      validates :subject_id, :presence => true, :uniqueness => { :scope => :_type }
       validates :identifier, :presence => true
 
       after_create :enqueue_refresh
