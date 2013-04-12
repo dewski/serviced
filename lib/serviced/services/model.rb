@@ -96,29 +96,6 @@ module Serviced
         def for(subject)
           find_or_initialize_by_subject_id_and_identifier(subject.id, subject.send(identifier_column))
         end
-
-        # Keep track of how long it takes for jobs to finish.
-        #
-        # Returns Hash of times.
-        def worker_times
-          initial = { :count => 0, :total_time => 0 }
-          condition = { '_type' => self.to_s }
-          reduce = %Q(function(doc, out) {
-            var exists = doc.started_working_at && doc.finished_working_at;
-            var finished = doc.finished_working_at > doc.started_working_at;
-            if(exists && finished) {
-              out.count++;
-              out.total_time += doc.finished_working_at - doc.started_working_at;
-            }
-          })
-          finalize = %Q(function(prev) {
-            prev.total_time = prev.total_time / 1000;
-            prev.mean_time = (prev.total_time / prev.count);
-          })
-
-          result = collection.group(:initial => initial, :cond => condition, :reduce => reduce, :finalize => finalize).first
-          HashWithIndifferentAccess.new(result)
-        end
       end
 
       # Determines if the service should be interacted with by knowing if it's
