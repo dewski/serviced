@@ -21,7 +21,7 @@ module Serviced
         @args = [subject_klass, subject_id]
 
         if subject = subject_klass.constantize.find(subject_id)
-          new(subject).perform
+          new(subject).process
         end
       end
 
