@@ -1,3 +1,4 @@
+require 'active_support/notifications'
 require 'serviced/jobs/base'
 
 module Serviced
@@ -59,11 +60,34 @@ module Serviced
       # rescue handler can catch any and all exceptions to let ActiveSupport::Rescuable
       # fan them out.
       #
+      # Instrumentation happens around the process method and fans out to any
+      # subscribers to `serviced.jobs.refresh`.
+      #
       # Returns nothing.
       def perform
-        process
+        instrument do
+          process
+        end
       rescue => exception
         rescue_with_handler(exception) || raise(exception)
+      end
+
+      protected
+
+      # Helper method to instrument the type of service that is being processed
+      # and the subject that the service belongs to.
+      #
+      # Returns nothing.
+      def instrument
+        options = {
+          :args => self.class.args,
+          :service_name => @service.class.service_name,
+          :subject => @subject
+        }
+
+        ActiveSupport::Notifications.instrument('refresh.jobs.serviced', options) do
+          yield
+        end
       end
     end
   end

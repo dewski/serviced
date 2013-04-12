@@ -8,6 +8,10 @@ module Serviced
       include ActiveSupport::Rescuable
       include Plugins::Retry
       include Plugins::Persistence
+
+      def self.args
+        @args
+      end
     end
   end
 end
