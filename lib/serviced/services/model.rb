@@ -172,6 +172,8 @@ module Serviced
       end
 
       def enqueue_refresh
+        return false unless active?
+
         Serviced.enqueue \
           self.class.service_class,
           self.class.service_name,
