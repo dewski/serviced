@@ -6,6 +6,10 @@ module Serviced
     class Refresh < Base
       rescue_from Timeout::Error, Errno::ETIMEDOUT, :with => :requeue
 
+      # Although set by default, any subclasses will publish instrumentation
+      # through different names. Individual jobs can override this.
+      notification_name 'refresh.jobs.serviced'
+
       # The default queue that all Serviced jobs will run under.
       #
       # Returns symbol of queue name.
@@ -30,6 +34,9 @@ module Serviced
           new(subject, service).perform
         end
       end
+
+      attr_reader :subject
+      attr_reader :service
 
       def initialize(subject, service)
         @subject = subject
@@ -70,24 +77,6 @@ module Serviced
         end
       rescue => exception
         rescue_with_handler(exception) || raise(exception)
-      end
-
-      protected
-
-      # Helper method to instrument the type of service that is being processed
-      # and the subject that the service belongs to.
-      #
-      # Returns nothing.
-      def instrument
-        options = {
-          :args => self.class.args,
-          :service_name => @service.class.service_name,
-          :subject => @subject
-        }
-
-        ActiveSupport::Notifications.instrument('refresh.jobs.serviced', options) do
-          yield
-        end
       end
     end
   end
