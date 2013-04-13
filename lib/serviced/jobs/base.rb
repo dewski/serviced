@@ -14,6 +14,9 @@ module Serviced
       def self.args
         @args
       end
+
+      attr_reader :subject
+      attr_reader :service
     end
   end
 end

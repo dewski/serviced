@@ -35,9 +35,6 @@ module Serviced
         end
       end
 
-      attr_reader :subject
-      attr_reader :service
-
       def initialize(subject, service)
         @subject = subject
         @service = service
