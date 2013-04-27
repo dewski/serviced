@@ -147,12 +147,13 @@ module Serviced
         refresh
       ensure
         @forced_refresh = false
+        mark_refreshed
       end
 
       # Sets the last_refreshed_at to the current time.
       #
       # Returns current Time.
-      def refreshed
+      def mark_refreshed
         update_attribute(:last_refreshed_at, Time.now.utc)
       end
 
