@@ -33,6 +33,10 @@ module Serviced
       true
     end
 
+    # To avoid any services preventing the model from saving the services
+    # are created in the background.
+    #
+    # Returns nothing.
     def enqueue_service_creation
       pk = send(self.class.primary_key)
       Serviced.enqueue(Serviced::Jobs::CreateServices, self.class.name, pk)
