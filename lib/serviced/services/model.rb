@@ -167,7 +167,7 @@ module Serviced
         @subject ||= self.class.subject_class.find(subject_id)
       end
 
-      def reset_identifier
+      def clear_identifier
         subject.update_column(self.class.identifier_column, nil)
       end
 

@@ -5,7 +5,7 @@ module Serviced
         extend ActiveSupport::Concern
 
         def destroy_service
-          @service.reset_identifier
+          @service.clear_identifier
           @service.destroy
         end
       end
