@@ -25,8 +25,6 @@ module Serviced
       class_attribute :services
       self.services = []
 
-      validate :validate_services, :if => :serviced_enabled?
-      after_update :refresh_services, :if => :serviced_enabled?
       before_destroy :destroy_services, :if => :serviced_enabled?
       after_commit :enqueue_service_creation, :on => :create, :if => :serviced_enabled?
     end
