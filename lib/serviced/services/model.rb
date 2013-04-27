@@ -7,6 +7,7 @@ module Serviced
 
       key :subject_id, Integer
       key :identifier
+
       key :started_working_at, Time, :default => lambda { Time.now.utc }
       key :finished_working_at, Time
       key :last_refreshed_at, Time
@@ -143,10 +144,7 @@ module Serviced
       end
 
       def refresh!
-        @forced_refresh = true
         refresh
-      ensure
-        @forced_refresh = false
         mark_refreshed
       end
 
@@ -155,10 +153,6 @@ module Serviced
       # Returns current Time.
       def mark_refreshed
         update_attribute(:last_refreshed_at, Time.now.utc)
-      end
-
-      def forced_refresh?
-        !!@forced_refresh
       end
 
       # Finds the associated subject based on the subject class and subject_id.
