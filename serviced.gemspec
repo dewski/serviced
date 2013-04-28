@@ -18,6 +18,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'rails',         '>= 3.0.0'
   s.add_dependency 'resque'
 
-  s.add_dependency 'mongo_mapper',  '0.11.1'
+  s.add_dependency 'mongo_mapper',  '>= 0.11.1'
   s.add_dependency 'bson_ext'
 end
