@@ -28,7 +28,15 @@ module Serviced
         # Returns subject class.
         def subject_class(klass = nil)
           if klass.nil?
-            @subject_class || raise("Missing subject class!")
+            if @subject_class.is_a?(String)
+              @subject_class.constantize
+            elsif @subject_class.respond_to?(:call)
+              @subject_class.call
+            elsif @subject_class.nil?
+              raise("Missing subject class!")
+            else
+              @subject_class
+            end
           else
             @subject_class = klass
           end
