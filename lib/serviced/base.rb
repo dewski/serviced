@@ -82,7 +82,7 @@ module Serviced
     # Returns Service instance if it exists, nil if missing.
     def service(name)
       if self.class.services.include?(name.to_sym)
-        Serviced.services[name.to_sym].for(self)
+        Serviced.fetch_service(name).for(self)
       end
     end
 
