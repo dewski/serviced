@@ -2,24 +2,10 @@ require 'serviced/jobs/refresh'
 
 module Serviced
   module Services
-    class Model
-      include MongoMapper::Document
+    module Model
+      extend ActiveSupport::Concern
 
-      key :subject_id, Integer
-      key :identifier
-
-      key :started_working_at, Time, :default => lambda { Time.now.utc }
-      key :finished_working_at, Time
-      key :last_refreshed_at, Time
-
-      timestamps!
-
-      validates :subject_id, :presence => true, :uniqueness => { :scope => :_type }
-      validates :identifier, :presence => true
-
-      after_create :enqueue_refresh
-
-      class << self
+      module ClassMethods
         # The class that is used to interface with the subject. It is expected
         # to be a +ActiveRecord+ model.
         #
@@ -93,18 +79,6 @@ module Serviced
         def service_class?
           service_class.present?
         end
-
-        # The Class.for method handles finding or initializing new Serviced
-        # service documents for the given subject. The service document will
-        # be prefilled with values needed to save the document if one is not
-        # found.
-        #
-        # subject - The subject that the service model is associated to.
-        #
-        # Returns Serviced::Services::Model document.
-        def for(subject)
-          find_or_initialize_by_subject_id_and_identifier(subject.id, subject.send(identifier_column))
-        end
       end
 
       # Determines if the service should be interacted with by knowing if it's
@@ -119,14 +93,14 @@ module Serviced
       #
       # Raises NotImplementedError until implemented in subclass.
       def refresh
-        raise NotImplementedError, "#{self.class} has not implemented #refresh"
+        raise NotImplementedError, "#{self.class}#refresh has not implemented"
       end
 
       # The abstract method that handles validations for each service.
       #
       # Raises NotImplementedError until implemented in subclass.
       def validate(model)
-        raise NotImplementedError, "#{self.class} has not implemented #validate"
+        raise NotImplementedError, "#{self.class}#validate(model) has not been implemented"
       end
 
       def working!
