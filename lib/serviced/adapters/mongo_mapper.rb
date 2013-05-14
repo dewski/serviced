@@ -1,3 +1,5 @@
+require 'mongo_mapper'
+
 module Serviced
   module Adapters
     module MongoMapper

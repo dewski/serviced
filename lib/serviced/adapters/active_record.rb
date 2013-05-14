@@ -1,3 +1,5 @@
+require 'active_record'
+
 module Serviced
   module Adapters
     module ActiveRecord
