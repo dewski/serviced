@@ -27,6 +27,7 @@ module Serviced
 
       before_destroy :destroy_services, :if => :serviced_enabled?
       after_commit :enqueue_service_creation, :on => :create, :if => :serviced_enabled?
+      after_commit :queue_dirty_service_refreshes, :on => :update, :if => :serviced_enabled?
     end
 
     def serviced_enabled?
@@ -56,7 +57,7 @@ module Serviced
     # Returns nothing.
     def refresh_services
       self.class.services.each do |service|
-        refresh_service service
+        refresh_service(service)
       end
     end
 
@@ -102,6 +103,28 @@ module Serviced
       self.class.services.each do |service|
         if service = service(service)
           service.validate(self)
+        end
+      end
+    end
+
+    private
+
+    # After a subject has been updated we need to make sure that any services
+    # that have had their identifier changed are refreshed.
+    #
+    # Returns nothing.
+    def queue_dirty_service_refreshes
+      changed_columns = previous_changes.keys.select do |column|
+        column.match(/\A[a-z0-9_]+\_identifier\Z/)
+      end
+
+      changed_services = changed_columns.collect do |column|
+        column.sub('_identifier', '')
+      end
+
+      changed_services.each do |service|
+        if self.class.services.include?(service.to_sym)
+          refresh_service(service)
         end
       end
     end
