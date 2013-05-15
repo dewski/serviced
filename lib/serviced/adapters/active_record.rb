@@ -30,7 +30,13 @@ module Serviced
           scope = where \
             :subject_id => subject.id,
             :subject_type => subject.class.model_name
-          scope.first_or_initialize(:identifier => subject.send(identifier_column))
+          record = scope.first_or_initialize(:identifier => subject.send(identifier_column))
+
+          if record.persisted?
+            record.update_attributes(:identifier => subject.send(identifier_column))
+          end
+
+          record
         end
       end
     end
