@@ -16,7 +16,7 @@ module Serviced
 
         scope :working, where('started_working_at > finished_working_at')
         scope :finished, where('finished_working_at > started_working_at')
-        scope :stale, order('last_refresh_at ASC')
+        scope :stale, order('last_refreshed_at ASC')
 
         after_create :enqueue_refresh
       end
