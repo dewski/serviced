@@ -19,7 +19,7 @@ module Serviced
         scope :stale, order('last_refreshed_at ASC')
 
         scope :disabled, where('disabled_at IS NOT NULL')
-        scope :enabled, where(:disabled_at => nil)
+        scope :enabled, where('disabled_at IS NULL')
 
         after_create :enqueue_refresh
       end
