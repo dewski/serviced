@@ -2,6 +2,7 @@ require 'active_support/rescuable'
 require 'serviced/jobs/plugins/instrumentation'
 require 'serviced/jobs/plugins/persistence'
 require 'serviced/jobs/plugins/retry'
+require 'serviced/jobs/plugins/states'
 
 module Serviced
   module Jobs
@@ -10,6 +11,7 @@ module Serviced
       include Plugins::Instrumentation
       include Plugins::Persistence
       include Plugins::Retry
+      include Plugins::States
 
       def self.args
         @args

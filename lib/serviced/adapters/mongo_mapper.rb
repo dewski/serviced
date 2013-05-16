@@ -15,6 +15,7 @@ module Serviced
         key :started_working_at, Time, :default => lambda { Time.now }
         key :finished_working_at, Time
         key :last_refreshed_at, Time
+        key :disabled_at, Time
 
         timestamps!
 

@@ -86,7 +86,7 @@ module Serviced
       #
       # Returns true if active, false if not.
       def active?
-        identifier?
+        identifier? && enabled?
       end
 
       # The abstract method that handles refreshing a service's data.
@@ -128,6 +128,22 @@ module Serviced
       def refresh!
         refresh
         mark_refreshed
+      end
+
+      def enable
+        update_attribute(:disabled_at, nil)
+      end
+
+      def enabled?
+        disabled_at.nil?
+      end
+
+      def disable
+        update_attribute(:disabled_at, Time.now)
+      end
+
+      def disabled?
+        disabled_at.present?
       end
 
       # Sets the last_refreshed_at to the current time.
