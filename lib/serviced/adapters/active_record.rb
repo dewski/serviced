@@ -11,8 +11,12 @@ module Serviced
         attr_accessible :identifier
 
         validates :subject_type, :presence => true
-        validates :subject_id, :presence => true, :uniqueness => { :scope => :subject_type }
-        validates :identifier, :presence => true
+        validates :subject_id,   :presence => true, :uniqueness => { :scope => :subject_type }
+        validates :identifier,   :presence => true
+
+        scope :working, where('started_working_at > finished_working_at')
+        scope :finished, where('finished_working_at > started_working_at')
+        scope :stale, order('last_refresh_at ASC')
 
         after_create :enqueue_refresh
       end
