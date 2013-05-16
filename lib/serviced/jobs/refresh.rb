@@ -45,7 +45,6 @@ module Serviced
       #
       # Returns nothing.
       def process
-        with_timestamps do
           @service.refresh!
         end
       end
@@ -69,11 +68,15 @@ module Serviced
       #
       # Returns nothing.
       def perform
-        instrument do
-          process
+        with_timestamps do
+          instrument do
+            begin
+              process
+            rescue => exception
+              rescue_with_handler(exception) || raise(exception)
+            end
+          end
         end
-      rescue => exception
-        rescue_with_handler(exception) || raise(exception)
       end
     end
   end
