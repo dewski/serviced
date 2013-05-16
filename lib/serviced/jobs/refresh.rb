@@ -45,8 +45,7 @@ module Serviced
       #
       # Returns nothing.
       def process
-          @service.refresh!
-        end
+        @service.refresh!
       end
 
       # Wraps the bulk of the job work by marking when the service has started
