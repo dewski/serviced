@@ -8,8 +8,6 @@ module Serviced
       included do
         include Serviced::Services::Model
 
-        attr_accessible :identifier
-
         validates :subject_type, :presence => true
         validates :subject_id,   :presence => true, :uniqueness => { :scope => :subject_type }
         validates :identifier,   :presence => true
