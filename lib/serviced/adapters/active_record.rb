@@ -34,7 +34,7 @@ module Serviced
         def for(subject)
           scope = where \
             :subject_id => subject.id,
-            :subject_type => subject.class.model_name
+            :subject_type => subject.class.model_name.to_s
           record = scope.first_or_initialize(:identifier => subject.send(identifier_column))
 
           if record.persisted?
