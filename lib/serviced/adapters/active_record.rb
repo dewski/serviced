@@ -13,7 +13,9 @@ module Serviced
         validates :identifier,   :presence => true
 
         scope :working, -> { where('started_working_at > finished_working_at') }
-        scope :finished, -> { where('finished_working_at > started_working_at') }
+        scope :finished, -> {
+          where('finished_working_at > started_working_at OR started_working_at = finished_working_at')
+        }
         scope :stale, -> { order('last_refreshed_at ASC') }
 
         scope :disabled, -> { where('disabled_at IS NOT NULL') }
