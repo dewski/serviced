@@ -35,6 +35,9 @@ module Serviced
         end
       end
 
+      attr_accessor :subject
+      attr_accessor :service
+
       def initialize(subject, service)
         @subject = subject
         @service = service
@@ -45,7 +48,7 @@ module Serviced
       #
       # Returns nothing.
       def process
-        @service.refresh!
+        service.refresh!
       end
 
       # Wraps the bulk of the job work by marking when the service has started
@@ -53,9 +56,15 @@ module Serviced
       #
       # Returns nothing.
       def with_timestamps
-        @service.working!
+        service.working!
         yield
-        @service.finished!
+        service.finished!
+      end
+
+      def rescuing
+        yield
+      rescue => exception
+        rescue_with_handler(exception) || raise(exception)
       end
 
       # This is where all job processing is expected to happen so the global
@@ -69,10 +78,8 @@ module Serviced
       def perform
         with_timestamps do
           instrument do
-            begin
+            rescuing do
               process
-            rescue => exception
-              rescue_with_handler(exception) || raise(exception)
             end
           end
         end
