@@ -116,6 +116,7 @@ module Serviced
       #
       # Returns true if working, false if not.
       def working?
+        return false unless started_working_at?
         return true if started_working_at? && !finished_working_at?
 
         started_working_at > finished_working_at
