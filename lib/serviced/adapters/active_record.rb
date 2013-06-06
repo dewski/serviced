@@ -21,7 +21,7 @@ module Serviced
         scope :disabled, -> { where('disabled_at IS NOT NULL') }
         scope :enabled, -> { where('disabled_at IS NULL') }
 
-        after_create :enqueue_refresh
+        after_commit :enqueue_refresh, :on => :create
       end
 
       module ClassMethods
