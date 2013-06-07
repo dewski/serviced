@@ -32,7 +32,11 @@ module Serviced
         end
       end
 
-      def limit(index)
+      def [](index)
+        partition[index]
+      end
+
+      def at(index)
         partition[index]
       end
     end
