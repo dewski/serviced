@@ -4,7 +4,7 @@ require 'serviced/jobs/base'
 module Serviced
   module Jobs
     class Refresh < Base
-      rescue_from Timeout::Error, Errno::ETIMEDOUT, :with => :requeue
+      rescue_from 'Timeout::Error', Errno::ETIMEDOUT, :with => :requeue
 
       # Although set by default, any subclasses will publish instrumentation
       # through different names. Individual jobs can override this.
