@@ -1,5 +1,5 @@
 require 'resque'
-require 'mongo_mapper'
+require 'rails'
 
 module Serviced
   class MissingServiceError < StandardError; end
