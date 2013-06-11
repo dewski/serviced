@@ -6,30 +6,27 @@ module Serviced
       extend ActiveSupport::Concern
 
       module ClassMethods
-        # The class that is used to interface with the subject. It is expected
-        # to be a +ActiveRecord+ model.
+        # The Class.for method handles finding or initializing new Serviced
+        # service documents for the given subject. The service document will
+        # be prefilled with values needed to save the document if one is not
+        # found.
         #
-        ## TODO: Not sure if we should _ensure_ it's an ActiveRecord model though.
+        # subject - The subject that the service model is associated to.
         #
-        # Returns subject class.
-        def subject_class(klass = nil)
-          if klass.nil?
-            if @subject_class.is_a?(String)
-              @subject_class.constantize
-            elsif @subject_class.respond_to?(:call)
-              @subject_class.call
-            elsif @subject_class.nil?
-              raise("Missing subject class!")
-            else
-              @subject_class
-            end
-          else
-            @subject_class = klass
-          end
-        end
+        # Returns Serviced::Services::Model document.
+        def for(subject)
+          identifier = subject.send(identifier_column)
+          scope = where({
+            :subject_id => subject.send(subject.class.primary_key),
+            :subject_type => subject.class.model_name.to_s
+          })
+          record = scope.first_or_initialize(:identifier => identifer)
 
-        def subject_class?
-          subject_class.present?
+          if record.persisted? && record.identifier != identifier
+            record.update_attributes(:identifier => identifier)
+          end
+
+          record
         end
 
         # The service name set for the given class, mostly used to know the
@@ -158,7 +155,7 @@ module Serviced
       #
       # Returns Subject if found.
       def subject
-        @subject ||= self.class.subject_class.find(subject_id)
+        @subject ||= subject_type.constantize.find(subject_id)
       end
 
       def clear_identifier
@@ -171,7 +168,7 @@ module Serviced
         Serviced.enqueue \
           self.class.service_class,
           self.class.service_name,
-          self.class.subject_class.name,
+          subject_type,
           subject_id
       end
     end
