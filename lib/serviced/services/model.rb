@@ -6,29 +6,6 @@ module Serviced
       extend ActiveSupport::Concern
 
       module ClassMethods
-        # The Class.for method handles finding or initializing new Serviced
-        # service documents for the given subject. The service document will
-        # be prefilled with values needed to save the document if one is not
-        # found.
-        #
-        # subject - The subject that the service model is associated to.
-        #
-        # Returns Serviced::Services::Model document.
-        def for(subject)
-          identifier = subject.send(identifier_column)
-          scope = where({
-            :subject_id => subject.send(subject.class.primary_key),
-            :subject_type => subject.class.model_name.to_s
-          })
-          record = scope.first_or_initialize(:identifier => identifier)
-
-          if record.persisted? && record.identifier != identifier
-            record.update_attributes(:identifier => identifier)
-          end
-
-          record
-        end
-
         # The service name set for the given class, mostly used to know the
         # identifier column on the subject.
         #
