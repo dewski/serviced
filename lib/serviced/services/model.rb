@@ -20,7 +20,7 @@ module Serviced
             :subject_id => subject.send(subject.class.primary_key),
             :subject_type => subject.class.model_name.to_s
           })
-          record = scope.first_or_initialize(:identifier => identifer)
+          record = scope.first_or_initialize(:identifier => identifier)
 
           if record.persisted? && record.identifier != identifier
             record.update_attributes(:identifier => identifier)
