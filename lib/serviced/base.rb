@@ -119,7 +119,12 @@ module Serviced
         column.match(/\A[a-z0-9_]+\_identifier\Z/)
       end
 
-      changed_services = changed_columns.collect do |column|
+      updated_columns = changed_columns.collect do |column|
+        before, after = previous_changes[column]
+        after.present?
+      end
+
+      changed_services = updated_columns.collect do |column|
         column.sub('_identifier', '')
       end
 
