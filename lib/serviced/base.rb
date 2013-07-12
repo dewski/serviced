@@ -27,7 +27,8 @@ module Serviced
 
       before_destroy :destroy_services, :if => :serviced_enabled?
       after_commit :enqueue_service_creation, :on => :create, :if => :serviced_enabled?
-      after_commit :queue_dirty_service_refreshes, :on => :update, :if => :serviced_enabled?
+      after_update :queue_dirty_service_refreshes, :if => :serviced_enabled?
+      after_update :destroy_removed_services, :if => :serviced_enabled?
     end
 
     def serviced_enabled?
@@ -125,6 +126,33 @@ module Serviced
       changed_services.each do |service|
         if self.class.services.include?(service.to_sym)
           refresh_service(service)
+        end
+      end
+    end
+
+    # After a subject has been updated we need to check if any services have
+    # been cleared. Any services that have been cleared need to be removed.
+    #
+    # Returns nothing.
+    def destroy_removed_services
+      changed_columns = previous_changes.keys.select do |column|
+        column.match(/\A[a-z0-9_]+\_identifier\Z/)
+      end
+
+      removed_columns = changed_columns.collect do |column|
+        before, after = previous_changes[column]
+        after.nil?
+      end
+
+      removed_services = removed_columns.collect do |column|
+        column.sub('_identifier', '')
+      end
+
+      removed_services.each do |name|
+        service = service(name)
+
+        if service.persisted?
+          service.destroy
         end
       end
     end
