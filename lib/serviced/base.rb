@@ -27,12 +27,24 @@ module Serviced
 
       before_destroy :destroy_services, :if => :serviced_enabled?
       after_commit :enqueue_service_creation, :on => :create, :if => :serviced_enabled?
-      after_update :queue_dirty_service_refreshes, :if => :serviced_enabled?
-      after_update :destroy_removed_services, :if => :serviced_enabled?
+      after_commit :queue_dirty_service_refreshes, :on => :update, :if => :serviced_enabled?
+      after_commit :destroy_removed_services, :on => :update, :if => :serviced_enabled?
     end
 
     def serviced_enabled?
       true
+    end
+
+    # Grabs the requested service and finds the associated document
+    # based on the unique identifier for said service.
+    #
+    # name - Service name
+    #
+    # Returns Service instance if it exists, nil if missing.
+    def service(name)
+      if self.class.services.include?(name.to_sym)
+        Serviced.fetch_service(name).for(self)
+      end
     end
 
     # To avoid any services preventing the model from saving the services
@@ -76,18 +88,6 @@ module Serviced
       end
     end
 
-    # Grabs the requested service and finds the associated document
-    # based on the unique identifier for said service.
-    #
-    # name - Service name
-    #
-    # Returns Service instance if it exists, nil if missing.
-    def service(name)
-      if self.class.services.include?(name.to_sym)
-        Serviced.fetch_service(name).for(self)
-      end
-    end
-
     # Loops through all attached services and destroys them if they
     # exist when the parent model is destroyed.
     #
@@ -97,6 +97,24 @@ module Serviced
         if service = service(service)
           service.destroy
         end
+      end
+    end
+
+    # Destroys the given service's data.
+    #
+    # name - Service name
+    #
+    # Returns boolean if service has been destroy, raises MissingServiceError
+    # if missing.
+    def destroy_service(name)
+      service = service(name)
+
+      if service.persisted?
+        service.destroy
+      elsif service.new_record?
+        true
+      elsif service.nil?
+        raise MissingServiceError, "Missing #{name} service."
       end
     end
 
@@ -119,19 +137,17 @@ module Serviced
         column.match(/\A[a-z0-9_]+\_identifier\Z/)
       end
 
-      updated_columns = changed_columns.collect do |column|
+      updated_columns = changed_columns.select do |column|
         before, after = previous_changes[column]
         after.present?
       end
 
-      changed_services = updated_columns.collect do |column|
+      updated_services = updated_columns.collect do |column|
         column.sub('_identifier', '')
       end
 
-      changed_services.each do |service|
-        if self.class.services.include?(service.to_sym)
-          refresh_service(service)
-        end
+      updated_services.each do |service|
+        refresh_service(service)
       end
     end
 
@@ -144,7 +160,7 @@ module Serviced
         column.match(/\A[a-z0-9_]+\_identifier\Z/)
       end
 
-      removed_columns = changed_columns.collect do |column|
+      removed_columns = changed_columns.select do |column|
         before, after = previous_changes[column]
         after.nil?
       end
@@ -154,11 +170,7 @@ module Serviced
       end
 
       removed_services.each do |name|
-        service = service(name)
-
-        if service.persisted?
-          service.destroy
-        end
+        destroy_service(name)
       end
     end
   end
