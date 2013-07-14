@@ -76,9 +76,9 @@ module Serviced
       #
       # Returns nothing.
       def perform
-        with_timestamps do
+        rescuing do
           instrument do
-            rescuing do
+            with_timestamps do
               process
             end
           end
