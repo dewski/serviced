@@ -77,11 +77,19 @@ module Serviced
         raise NotImplementedError, "#{self.class}#validate(model) has not been implemented"
       end
 
+      # Mark the service as working.
+      #
+      # Returns true if updated, false if not.
       def working!
         update_attribute(:started_working_at, Time.now.utc)
       end
 
+      # Log when the service is finished working. The refresh job may destroy the
+      # service so we need to ensure we don't write to it again.
+      #
+      # Returns true if updated, false if not.
       def finished!
+        return unless persisted?
         update_attribute(:finished_working_at, Time.now.utc)
       end
 
