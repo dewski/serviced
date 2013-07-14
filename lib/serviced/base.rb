@@ -162,7 +162,7 @@ module Serviced
 
       removed_columns = changed_columns.select do |column|
         before, after = previous_changes[column]
-        after.nil?
+        after.blank?
       end
 
       removed_services = removed_columns.collect do |column|
