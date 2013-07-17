@@ -96,6 +96,18 @@ module Serviced
       end
     end
 
+    # Loops through all attached services and destroys them if they
+    # exist when the parent model is destroyed.
+    #
+    # Returns nothing.
+    def destroy_services
+      self.class.services.each do |service|
+        if service = service(service)
+          service.destroy
+        end
+      end
+    end
+
     # Destroys the given service's data.
     #
     # name - Service name
