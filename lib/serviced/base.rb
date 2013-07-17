@@ -18,6 +18,15 @@ module Serviced
             self.services |= [name.to_sym]
           end
         end
+
+        self.services.each do |name|
+          class_name = Serviced.fetch_service(name).to_s
+
+          has_one "#{name}_service".to_sym,
+            :class_name => class_name,
+            :dependent => :destroy,
+            :as => :servicable
+        end
       end
     end
 
@@ -25,7 +34,6 @@ module Serviced
       class_attribute :services
       self.services = []
 
-      before_destroy :destroy_services, :if => :serviced_enabled?
       after_commit :enqueue_service_creation, :on => :create, :if => :serviced_enabled?
       after_commit :queue_dirty_service_refreshes, :on => :update, :if => :serviced_enabled?
       after_commit :destroy_removed_services, :on => :update, :if => :serviced_enabled?
@@ -85,18 +93,6 @@ module Serviced
         service.enqueue_refresh
       else
         raise MissingServiceError, "Missing #{name} service."
-      end
-    end
-
-    # Loops through all attached services and destroys them if they
-    # exist when the parent model is destroyed.
-    #
-    # Returns nothing.
-    def destroy_services
-      self.class.services.each do |service|
-        if service = service(service)
-          service.destroy
-        end
       end
     end
 
