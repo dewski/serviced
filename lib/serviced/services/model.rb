@@ -136,15 +136,8 @@ module Serviced
         update_attribute(:last_refreshed_at, Time.now.utc)
       end
 
-      # Finds the associated subject based on the subject class and subject_id.
-      #
-      # Returns Subject if found.
-      def subject
-        @subject ||= subject_type.constantize.find(subject_id)
-      end
-
       def clear_identifier
-        subject.update_column(self.class.identifier_column, nil)
+        servicable.update_column(self.class.identifier_column, nil)
       end
 
       def enqueue_refresh
@@ -153,8 +146,8 @@ module Serviced
         Serviced.enqueue \
           self.class.service_class,
           self.class.service_name,
-          subject_type,
-          subject_id
+          servicable_type,
+          servicable_id
       end
     end
   end
