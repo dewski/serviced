@@ -137,7 +137,7 @@ module Serviced
       end
 
       def clear_identifier
-        servicable.update_column(self.class.identifier_column, nil)
+        serviceable.update_column(self.class.identifier_column, nil)
       end
 
       def enqueue_refresh
@@ -146,8 +146,8 @@ module Serviced
         Serviced.enqueue \
           self.class.service_class,
           self.class.service_name,
-          servicable_type,
-          servicable_id
+          serviceable_type,
+          serviceable_id
       end
     end
   end

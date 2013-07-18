@@ -8,11 +8,11 @@ module Serviced
       included do
         include Serviced::Services::Model
 
-        belongs_to :servicable, :polymorphic => true
+        belongs_to :serviceable, :polymorphic => true
 
-        validates :servicable_type, :presence => true
-        validates :servicable_id,   :presence => true, :uniqueness => { :scope => :servicable_type }
-        validates :identifier,      :presence => true
+        validates :serviceable_type, :presence => true
+        validates :serviceable_id,   :presence => true, :uniqueness => { :scope => :serviceable_type }
+        validates :identifier,       :presence => true
 
         scope :working, -> { where('started_working_at > finished_working_at') }
         scope :finished, -> {
@@ -38,8 +38,8 @@ module Serviced
         def for(subject)
           identifier = subject.send(identifier_column)
           scope = where({
-            :servicable_id => subject.send(subject.class.primary_key),
-            :servicable_type => subject.class.model_name.to_s
+            :serviceable_id   => subject.send(subject.class.primary_key),
+            :serviceable_type => subject.class.model_name.to_s
           })
           record = scope.first_or_initialize(:identifier => identifier)
 

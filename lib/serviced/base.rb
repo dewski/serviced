@@ -25,7 +25,7 @@ module Serviced
           has_one "#{name}_service".to_sym,
             :class_name => class_name,
             :dependent => :destroy,
-            :as => :servicable
+            :as => :serviceable
         end
       end
     end
