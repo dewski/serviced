@@ -1,4 +1,5 @@
 require 'active_record'
+require 'serviced/jobs/partition'
 
 module Serviced
   module Adapters
@@ -15,13 +16,11 @@ module Serviced
         validates :identifier,       :presence => true
 
         scope :working, -> { where('started_working_at > finished_working_at') }
-        scope :finished, -> {
-          where('finished_working_at > started_working_at OR started_working_at = finished_working_at')
-        }
+        scope :finished, -> { where('finished_working_at >= started_working_at') }
         scope :stale, -> { order('last_refreshed_at ASC') }
 
-        scope :disabled, -> { where('disabled_at IS NOT NULL') }
-        scope :enabled, -> { where('disabled_at IS NULL') }
+        scope :disabled, -> { where.not(:disabled_at => nil) }
+        scope :enabled, -> { where(:disabled_at => nil) }
 
         after_commit :enqueue_refresh, :on => :create
       end
@@ -48,6 +47,18 @@ module Serviced
           end
 
           record
+        end
+
+        # Fetches the partitioned documents at the current hour for bulk refresh.
+        #
+        # Returns Array of ActiveRecord::Base instances 
+        def bulk_refresh
+          partition = Serviced::Jobs::Partition.new(24, count)
+          document_limit = partition.at(Time.now.hour)
+
+          enabled.finished.stale.limit(document_limit).find_each do |service|
+            service.enqueue_refresh
+          end
         end
       end
     end
